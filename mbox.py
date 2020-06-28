@@ -64,6 +64,8 @@ def parseFile(fp, filename):
 
         if (regexp is not None):
             #print(line)
+
+            # From
             if (regexp.group(1) == "From: "): 
                 status = "R"
                 name = ""
@@ -74,6 +76,7 @@ def parseFile(fp, filename):
                 elif (version == 2):
                     number = int(regexp.group(3))
 
+            # To
             elif (regexp.group(1) == "To: "):
                 #status = ""
                 status = "S"
@@ -85,6 +88,7 @@ def parseFile(fp, filename):
                 elif (version == 2):
                     number = int(regexp.group(3))
 
+            # Date time
             elif (regexp.group(1) == "Date: "):
                 #print(regexp)
                 date = ""
@@ -97,11 +101,15 @@ def parseFile(fp, filename):
                     day = regexp.group(3)
 
                 date = getMonthNum(regexp.group(4)) + "-" + day + "-" + regexp.group(5)
+            
+            # Message Content 
             elif (regexp.group(1) == "Content-Transfer-Encoding: quoted-printable"):
                 msg = ""
                 msg = getMsg(fp)
                 flag = True
                 #print(msg)
+            
+            # SMS vs MMS 
             elif (regexp.group(1) == "Content-Type: "):
                 msgType = ""
                 imgStr = ""
@@ -116,9 +124,7 @@ def parseFile(fp, filename):
                     msgType = "MMS"
                     flag = True
 
-            '''
-                Add message to message dictionary
-            '''
+            # Add message to message directory 
             if (flag is True):
                 if (msgType == "SMS"):
                     msgData = (date, status, msgType, msg)
@@ -190,6 +196,7 @@ def getMsg(fp):
         elif (res.group(2) == "From "):
             break
 
+    msg = convertMsg(msg)
     return msg
 
 ''' 
@@ -280,7 +287,17 @@ def getFullname(name):
     return fullname
 
 '''
-    getHTML: generates HTML page for (up to) 1000 messages for given contact name and number
+    convertMsg: Converts hex values for utf-8 encoded characters
+'''
+def convertMsg(text):
+    uni = re.findall("(=([A-F0-9]{2}))", text)
+    for (o, n) in uni: 
+        text = text.replace(o, "\\x"+n)
+
+    return text
+
+'''
+    getHTML: Generates HTML page for (up to) 1000 messages for given contact name and number
 '''
 def getHTML(name, number, msgList, filename):
     stylesheetName = "style.css"
@@ -303,6 +320,9 @@ def getHTML(name, number, msgList, filename):
     with open(filename, "w") as fp:
         print(doc, file=fp)
 
+'''
+    generateCSS(): Generates CSS stylesheet
+'''
 def generateCSS():
     print("Generating 'style.css'")
     
