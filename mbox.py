@@ -60,7 +60,7 @@ def parseFile(fp, filename):
     
     print("Parsing Filename: " + filename)
     for line in fp:
-        regexp = getRegexp(line)
+        (regexp, version)= getRegexp(line)
 
         if (regexp is not None):
             #print(line)
@@ -68,16 +68,23 @@ def parseFile(fp, filename):
                 status = "R"
                 name = ""
                 name = regexp.group(2)
-                number = int(regexp.group(3) + regexp.group(4) + 
-                    regexp.group(5))
+
+                if (version == 1):
+                    number = int(regexp.group(3) + regexp.group(4) + regexp.group(5))
+                elif (version == 2):
+                    number = int(regexp.group(3))
 
             elif (regexp.group(1) == "To: "):
                 #status = ""
                 status = "S"
                 name = ""
                 name = regexp.group(2)
-                number = int(regexp.group(3) + regexp.group(4) + 
-                    regexp.group(5))
+
+                if (version == 1):
+                    number = int(regexp.group(3) + regexp.group(4) + regexp.group(5))
+                elif (version == 2):
+                    number = int(regexp.group(3))
+
             elif (regexp.group(1) == "Date: "):
                 #print(regexp)
                 date = ""
@@ -132,26 +139,41 @@ def parseFile(fp, filename):
     getRegexp: Parses line using regexps to determine contact info, datetime, and message data 
 """
 def getRegexp(line):
-    # Contact info - Message Recieved
+    # Contact info - Message Recieved, format 1
     regexp = re.search("^(From: )([a-zA-Z]+ [a-zA-Z]+) <\D([0-9]+)\D ([0-9]+)-([0-9]+).*$", line)
+    version = 1
 
-    # Contact info - Message Sent
+    # Contact info - Message Received, format 2
+    if (regexp is None): 
+        regexp = re.search("^(From: )([a-zA-Z]+ []a-zA-z]+) <\+([0-9]{10,11})@([a-z]*).([a-z]*)>$", line)
+        version = 2
+
+    # Contact info - Message Sent, format 1
     if (regexp is None):
         regexp = re.search("^(To: )([a-zA-Z]+ [a-zA-Z]+) <\D([0-9]+)\D ([0-9]+)-([0-9]+).*$", line)
+        version = 1
+
+    # Contact info - Message Sent, format 2
+    if (regexp is None):
+        regexp = re.search("^(To: )([a-zA-Z]+ []a-zA-z]+) <\+([0-9]{10,11})@([a-z]*).([a-z]*)>$", line)
+        version = 2
 
     # Datetime info
     if (regexp is None):
         regexp = re.search("^(Date: )([a-zA-Z]+), ([0-9]+) ([a-zA-Z]+) ([0-9]{4}) ([0-9]{2}:[0-9]{2}:[0-9]{2}).*$", line)
+        version = -1
 
     # Message info 
     if (regexp is None):
         regexp = re.search("^(Content-Transfer-Encoding: quoted-printable).*$", line)
+        version = -1
 
     # Content type info 
     if (regexp is None):
         regexp = re.search("^(Content-Type: )([a-z]+/[a-z]+).*$", line)
+        version = -1
 
-    return regexp
+    return (regexp, version)
 
 '''
     getMsg: Extracts message from input file
