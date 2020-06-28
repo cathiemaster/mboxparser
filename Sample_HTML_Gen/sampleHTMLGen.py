@@ -11,7 +11,10 @@ def getHTML(name, number, msgList, filename):
     #print(docTitle)
 
     doc = dominate.document(title=docTitle)
-    h = doc.head(link(rel="stylesheet", href=stylesheetName))
+
+    with doc.head:
+        link(rel="stylesheet", href=stylesheetName)
+        meta(charset="UTF-8")
     
     with doc.body:
         with header():
