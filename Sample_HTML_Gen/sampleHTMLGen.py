@@ -3,6 +3,7 @@ from dominate.tags import *
 
 def getHTML(name, number, msgList, filename):
     dateCount = smsCount = mmsCount = msgCount = 1
+    flag = True
     msgId = ""
 
     stylesheetName = "style.css"
@@ -14,7 +15,7 @@ def getHTML(name, number, msgList, filename):
 
     with doc.head:
         link(rel="stylesheet", href=stylesheetName)
-        meta(charset="UTF-8")
+        meta(charset="UTF-8", name="Catherine Master, 2020")
     
     with doc.body:
         with header():
@@ -56,6 +57,9 @@ def getHTML(name, number, msgList, filename):
                             img(src=val, width="500", height="250", cls="r_message MMS", id="image")
                             msgCount += 1
                             mmsCount += 1
+
+                    if (msgCount == 10):
+                        
                 
 
     with open(filename, "w") as fp:
