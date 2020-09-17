@@ -37,7 +37,7 @@ def writeToFile(messages, imgFileNames, filename):
         
         fname = dirName[:-1] + "_" + str(number) + "_" + str(fileNum) + ".html"
         msgList = messages[(name, number)]
-        #print(msgList)
+        print(msgList)
         #getHTML(name, number, msgList, fname)     
 
 '''
@@ -287,14 +287,31 @@ def getFullname(name):
     return fullname
 
 '''
-    convertMsg: Converts hex values for utf-8 encoded characters
+    convertMsg: Converts hex values to use in HTML doc 
 '''
 def convertMsg(text):
+    old = new = tmp = ""
+    count = 1
+
     uni = re.findall("(=([A-F0-9]{2}))", text)
     for (o, n) in uni: 
-        text = text.replace(o, "\\x"+n)
+        if ((count % 5) == 0):
+            new += bytes(tmp, 'utf-8').decode('unicode_escape').encode('latin-1').decode('utf8')
+            tmp = ""
+        tmp += n
+        old += o
+        count += 1
+
+    #r = bytes.fromhex('F09F98AF').decode('utf-8')
+    #text = text.replace(old, new)
+    #print(text)
 
     return text
+
+def hexToUtf(hex):
+    byteLen = 0
+
+    if 
 
 '''
     getHTML: Generates HTML page for (up to) 1000 messages for given contact name and number
